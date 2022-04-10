@@ -1,0 +1,175 @@
+#pragma version 6
+
+txn ApplicationID
+bz handle_setup
+
+txn OnCompletion
+int UpdateApplication
+==
+bnz handle_update
+
+method "deploy(pay,byte[],byte[])uint64"
+txn ApplicationArgs 0
+==
+bnz method_deploy
+
+method "update(application,byte[],byte[])bool"
+txn ApplicationArgs 0
+==
+bnz method_update
+
+method "destroy(application)bool"
+txn ApplicationArgs 0
+==
+bnz method_destroy
+
+handle_setup:
+	int 1
+	return
+
+handle_update:
+	txn Sender
+	global CreatorAddress
+	==
+	return
+
+method_deploy:
+	// Check sender is funding the application with
+	// enough Algo to deploy a smart contract.
+	txn GroupIndex
+	int 1
+	-
+	dup
+	gtxns Receiver
+	global CurrentApplicationAddress
+	==
+	assert
+	gtxns Amount
+	int 100000
+	>=
+	assert
+
+	// Begin the inner transaction to deploy the new smart contract
+	// using the approval and clear programs passed in as arguments.
+	itxn_begin
+
+	int appl
+	itxn_field TypeEnum
+
+	int NoOp
+	itxn_field OnCompletion
+
+	// Get the length and extract it, removing the first 2 bytes.
+	txn ApplicationArgs 1
+	dup
+	len
+	int 2
+	swap
+	substring3
+	itxn_field ApprovalProgram
+
+	// Get the length and extract it, removing the first 2 bytes.
+	txn ApplicationArgs 2
+	dup
+	len
+	int 2
+	swap
+	substring3
+	itxn_field ClearStateProgram
+
+	int 0
+	itxn_field Fee
+
+	itxn_submit
+
+	// Using the ARC4 return string, concat the newly created appID.
+	byte 0x151f7c75
+	itxn CreatedApplicationID
+	itob
+	concat
+	log
+
+	int 1
+	return
+
+method_update:
+	itxn_begin
+
+	int appl
+	itxn_field TypeEnum
+
+	int UpdateApplication
+	itxn_field OnCompletion
+
+	txn ApplicationArgs 1
+	btoi
+	txnas Applications
+	itxn_field ApplicationID
+
+	txn ApplicationArgs 2
+	dup
+	len
+	int 2
+	swap
+	substring3
+	itxn_field ApprovalProgram
+
+	txn ApplicationArgs 3
+	dup
+	len
+	int 2
+	swap
+	substring3
+	itxn_field ClearStateProgram
+
+	int 0
+	itxn_field Fee
+
+	itxn_submit
+
+	byte 0x151f7c7580
+	log
+
+	int 1
+	return
+
+method_destroy:
+	itxn_begin
+
+	int appl
+	itxn_field TypeEnum
+
+	int DeleteApplication
+	itxn_field OnCompletion
+
+	txn ApplicationArgs 1
+	btoi
+	txnas Applications
+	itxn_field ApplicationID
+
+	int 0
+	itxn_field Fee
+
+	itxn_submit
+	itxn_begin
+
+	int pay
+	itxn_field TypeEnum
+
+	txn Sender
+	itxn_field Receiver
+
+	int 100000
+	itxn_field Amount
+
+	int 0
+	itxn_field Fee
+
+	itxn_submit
+
+	byte 0x151f7c7580
+	log
+
+	int 1
+	return
+
