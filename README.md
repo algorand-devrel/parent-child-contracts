@@ -19,7 +19,7 @@ child smart contracts.
 ```sh
 goal app create \
 	--creator JAQA7FTVZP2ZK32Z7HEVIL5XJZEMTEFV7FRI6BJAT7VUQB6GA7NEBN4KS4 \
-	--approval-prog app.teal --clear-prog clear.teal \
+	--approval-prog parent.teal --clear-prog clear.teal \
 	--global-byteslices 0 --global-ints 0 \
 	--local-byteslices 0 --local-ints 0
 ```
@@ -92,7 +92,9 @@ the child smart contract.
 goal app method -f JAQA7FTVZP2ZK32Z7HEVIL5XJZEMTEFV7FRI6BJAT7VUQB6GA7NEBN4KS4 \
 	--app-id 62 \
 	--method "deploy(pay,byte[],byte[])uint64" \
-	--arg pay.txn --arg "[6,129,1]" --arg "[6,129,1]" \
+	--arg pay.txn \
+	--arg "[6,32,2,1,0,49,24,65,0,22,49,25,129,5,18,64,0,16,54,26,0,128,4,229,72,146,240,18,64,0,9,0,34,67,49,0,50,9,18,67,54,26,1,73,21,129,2,76,82,53,0,52,0,53,4,52,0,21,53,1,35,53,2,52,2,52,1,12,65,0,26,52,4,52,1,52,2,9,34,9,52,0,52,2,85,86,53,4,52,2,34,8,53,2,66,255,222,128,4,21,31,124,117,35,22,87,7,0,80,52,4,21,22,87,7,0,80,52,4,80,176,34,67]" \
+	--arg "[6,129,1]" \
 	--fee 2000
 ```
 

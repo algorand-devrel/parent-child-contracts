@@ -1,0 +1,104 @@
+#pragma version 6
+
+txn ApplicationID
+bz handle_setup
+
+txn OnCompletion
+int DeleteApplication
+==
+bnz handle_delete
+
+txn ApplicationArgs 0
+method "reverse(string)string"
+==
+bnz method_reverse
+
+err
+
+handle_setup:
+	int 1
+	return
+
+handle_delete:
+	txn Sender
+	global CreatorAddress
+	==
+	return
+
+// Scratch Space:
+//	0: Original word
+//	1: Length of word
+//	2: Byte position
+//	4: Reversed word
+method_reverse:
+	// Get input, minus ABI encoded start
+	txn ApplicationArgs 1
+	dup
+	len
+	int 2
+	swap
+	substring3
+	store 0
+	load 0
+	store 4
+
+	load 0
+	len
+	store 1
+
+	int 0
+	store 2
+
+	// Whilst position is less than or equal to the length of the word
+	loop:
+	load 2
+	load 1
+	<
+	bz done
+
+	// Set byte using opposite position end of argument
+	load 4
+	load 1
+	load 2
+	-
+	int 1
+	-
+	load 0
+	load 2
+	getbyte
+	setbyte
+	store 4
+
+	// Increment position
+	load 2
+	int 1
+	+
+	store 2
+
+	b loop
+	done:
+
+	// Construct return
+	byte 0x151f7c75
+
+	// Position
+	int 0
+	itob
+	extract 7 0
+	concat
+
+	// Length
+	load 4
+	len
+	itob
+	extract 7 0
+	concat
+
+	// String
+	load 4
+	concat
+	log
+
+	int 1
+	return
+
