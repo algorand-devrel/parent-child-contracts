@@ -4,9 +4,13 @@ txn ApplicationID
 bz handle_setup
 
 txn OnCompletion
+int UpdateApplication
+==
+txn OnCompletion
 int DeleteApplication
 ==
-bnz handle_delete
+||
+bnz handle_update_or_delte
 
 txn ApplicationArgs 0
 method "reverse(string)string"
@@ -19,7 +23,7 @@ handle_setup:
 	int 1
 	return
 
-handle_delete:
+handle_update_or_delete:
 	txn Sender
 	global CreatorAddress
 	==
