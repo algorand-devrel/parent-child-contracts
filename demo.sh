@@ -88,9 +88,6 @@ CHILD_APP_ID=$(${GOAL} app method -f ${DEPLOYER_ADDR} \
 	| awk '{print $6}' \
 	| tr -d '\r')
 
-# Remove payment transaction
-rm pay.txn
-
 # Call Child
 ${GOAL} app method -f ${DEPLOYER_ADDR} \
 	--app-id ${CHILD_APP_ID} \
