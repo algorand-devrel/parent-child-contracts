@@ -23,6 +23,8 @@ txn ApplicationArgs 0
 ==
 bnz method_destroy
 
+err
+
 handle_setup:
 	int 1
 	return
